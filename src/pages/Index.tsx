@@ -45,6 +45,7 @@ const Index = () => {
   const [evaluations, setEvaluations] = useState<Record<string, Evaluation>>({});
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -68,9 +69,17 @@ const Index = () => {
       return;
     }
 
-    fetchProfile();
-    checkAdminStatus();
-    fetchMyEvaluations();
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([
+        fetchProfile(),
+        checkAdminStatus(),
+        fetchMyEvaluations()
+      ]);
+      setLoading(false);
+    };
+
+    loadData();
   }, [user]);
 
   const fetchProfile = async () => {
@@ -196,8 +205,15 @@ const Index = () => {
     }
   };
 
-  if (!user || !profile) {
-    return null;
+  if (loading || !user || !profile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
   }
 
   // Evaluation form screen
