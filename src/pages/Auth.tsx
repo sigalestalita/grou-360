@@ -9,22 +9,21 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import logoIEE from "@/assets/Logo_IEE.svg";
 import { z } from "zod";
-
 const signupSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  position: z.string().min(2, "Cargo deve ter pelo menos 2 caracteres"),
+  position: z.string().min(2, "Cargo deve ter pelo menos 2 caracteres")
 });
-
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
-  password: z.string().min(1, "Senha é obrigatória"),
+  password: z.string().min(1, "Senha é obrigatória")
 });
-
 const Auth = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [loading, setLoading] = useState(false);
 
   // Login state
@@ -40,103 +39,106 @@ const Auth = () => {
   // Password reset state
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (session) {
-          navigate("/", { replace: true });
-        }
+    const {
+      data: {
+        subscription
       }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/", { replace: true });
+        navigate("/", {
+          replace: true
+        });
       }
     });
-
+    supabase.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
+      if (session) {
+        navigate("/", {
+          replace: true
+        });
+      }
+    });
     return () => subscription.unsubscribe();
   }, [navigate]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const validation = loginSchema.safeParse({ email: loginEmail, password: loginPassword });
+    const validation = loginSchema.safeParse({
+      email: loginEmail,
+      password: loginPassword
+    });
     if (!validation.success) {
       toast({
         title: "Erro de validação",
         description: validation.error.errors[0].message,
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const {
+        error
+      } = await supabase.auth.signInWithPassword({
         email: loginEmail,
-        password: loginPassword,
+        password: loginPassword
       });
-
       if (error) throw error;
-
       toast({
         title: "Login realizado!",
-        description: "Bem-vindo de volta.",
+        description: "Bem-vindo de volta."
       });
       navigate("/");
     } catch (error: any) {
       toast({
         title: "Erro no login",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const validation = signupSchema.safeParse({
       email: signupEmail,
       password: signupPassword,
       name,
-      position,
+      position
     });
-
     if (!validation.success) {
       toast({
         title: "Erro de validação",
         description: validation.error.errors[0].message,
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const {
+        error
+      } = await supabase.auth.signUp({
         email: signupEmail,
         password: signupPassword,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             name,
-            position,
-          },
-        },
+            position
+          }
+        }
       });
-
       if (error) throw error;
-
       toast({
         title: "Conta criada!",
-        description: "Você pode fazer login agora.",
+        description: "Você pode fazer login agora."
       });
-      
+
       // Clear form
       setSignupEmail("");
       setSignupPassword("");
@@ -146,54 +148,48 @@ const Auth = () => {
       toast({
         title: "Erro ao criar conta",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const validation = z.string().email("Email inválido").safeParse(resetEmail);
     if (!validation.success) {
       toast({
         title: "Erro de validação",
         description: "Por favor, insira um email válido",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth`,
+      const {
+        error
+      } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth`
       });
-
       if (error) throw error;
-
       toast({
         title: "Email enviado!",
-        description: "Verifique sua caixa de entrada para redefinir sua senha.",
+        description: "Verifique sua caixa de entrada para redefinir sua senha."
       });
-      
       setResetEmail("");
       setShowPasswordReset(false);
     } catch (error: any) {
       toast({
         title: "Erro ao enviar email",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
+  return <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-4">
           <div className="flex justify-center">
@@ -214,113 +210,52 @@ const Auth = () => {
             </TabsList>
             
             <TabsContent value="login">
-              {!showPasswordReset ? (
-                <form onSubmit={handleLogin} className="space-y-4">
+              {!showPasswordReset ? <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      required
-                    />
+                    <Input id="login-email" type="email" placeholder="seu@email.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Senha</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      placeholder="••••••"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      required
-                    />
+                    <Input id="login-password" type="password" placeholder="••••••" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Entrando..." : "Entrar"}
                   </Button>
-                  <button
-                    type="button"
-                    onClick={() => setShowPasswordReset(true)}
-                    className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  <button type="button" onClick={() => setShowPasswordReset(true)} className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors">
                     Esqueci minha senha
                   </button>
-                </form>
-              ) : (
-                <form onSubmit={handlePasswordReset} className="space-y-4">
+                </form> : <form onSubmit={handlePasswordReset} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="reset-email">Email</Label>
-                    <Input
-                      id="reset-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      required
-                    />
+                    <Input id="reset-email" type="email" placeholder="seu@email.com" value={resetEmail} onChange={e => setResetEmail(e.target.value)} required />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Enviando..." : "Enviar link de recuperação"}
                   </Button>
-                  <button
-                    type="button"
-                    onClick={() => setShowPasswordReset(false)}
-                    className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  <button type="button" onClick={() => setShowPasswordReset(false)} className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors">
                     Voltar ao login
                   </button>
-                </form>
-              )}
+                </form>}
             </TabsContent>
             
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-name">Nome Completo</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="Seu nome"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
+                  <Input id="signup-name" type="text" placeholder="Seu nome" value={name} onChange={e => setName(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-position">Cargo</Label>
-                  <Input
-                    id="signup-position"
-                    type="text"
-                    placeholder="Seu cargo"
-                    value={position}
-                    onChange={(e) => setPosition(e.target.value)}
-                    required
-                  />
+                  <Input id="signup-position" type="text" placeholder="Seu cargo" value={position} onChange={e => setPosition(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="signup-email" type="email" placeholder="seu@email.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Senha</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="••••••"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    required
-                  />
+                  <Input id="signup-password" type="password" placeholder="••••••" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} required />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Criando conta..." : "Criar conta"}
@@ -331,12 +266,8 @@ const Auth = () => {
         </CardContent>
       </Card>
       <footer className="mt-8 text-center">
-        <p className="text-sm text-muted-foreground">
-          Desenvolvido por <span className="font-semibold">Grou</span>
-        </p>
+        
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Auth;
