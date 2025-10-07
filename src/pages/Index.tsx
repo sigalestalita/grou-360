@@ -46,6 +46,7 @@ const Index = () => {
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -58,16 +59,19 @@ const Index = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setAuthChecked(true);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
-    if (!user) {
+    if (!user && authChecked) {
       navigate("/auth");
       return;
     }
+    
+    if (!user) return;
 
     const loadData = async () => {
       setLoading(true);
@@ -80,7 +84,7 @@ const Index = () => {
     };
 
     loadData();
-  }, [user]);
+  }, [user, authChecked]);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -205,7 +209,7 @@ const Index = () => {
     }
   };
 
-  if (loading || !user || !profile) {
+  if (!authChecked || loading || !user || !profile) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center">
         <div className="text-center space-y-4">
