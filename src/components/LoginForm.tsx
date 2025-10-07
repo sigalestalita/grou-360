@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import logoIEE from "@/assets/Logo_IEE.svg";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => void;
@@ -47,9 +48,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
-            <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-2xl font-bold text-primary-foreground">IEE</span>
-            </div>
+            <img src={logoIEE} alt="IEE Logo" className="h-16 w-auto" />
           </div>
           <CardTitle className="text-2xl text-center">Sistema de Feedback</CardTitle>
           <CardDescription className="text-center">
