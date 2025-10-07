@@ -113,6 +113,10 @@ const Index = () => {
       .eq("role", "admin")
       .maybeSingle();
 
+    if (data) {
+      navigate("/admin", { replace: true });
+    }
+
     setIsAdmin(!!data);
   };
 
