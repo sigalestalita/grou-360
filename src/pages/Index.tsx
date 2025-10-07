@@ -7,6 +7,7 @@ import { EvaluationForm } from "@/components/EvaluationForm";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import logoVerde from "@/assets/Logo_Verde.webp";
 
 interface User {
   id: string;
@@ -174,6 +175,15 @@ const Index = () => {
             ))}
           </div>
         </main>
+        
+        <footer className="border-t bg-background/50 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-sm text-muted-foreground">Desenvolvido por</span>
+              <img src={logoVerde} alt="Grow" className="h-6" />
+            </div>
+          </div>
+        </footer>
       </div>
     </>
   );
