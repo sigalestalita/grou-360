@@ -330,6 +330,11 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+      <footer className="mt-8 text-center">
+        <p className="text-sm text-muted-foreground">
+          Desenvolvido por <span className="font-semibold">Grou</span>
+        </p>
+      </footer>
     </div>
   );
 };
