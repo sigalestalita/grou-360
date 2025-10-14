@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { UserCard } from "@/components/UserCard";
 import { EvaluationForm } from "@/components/EvaluationForm";
+import { SelfEvaluationForm } from "@/components/SelfEvaluationForm";
 import { ChangePasswordDialog } from "@/components/ChangePasswordDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +50,8 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [showSelfEvaluation, setShowSelfEvaluation] = useState(false);
+  const [hasSelfEvaluation, setHasSelfEvaluation] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -80,7 +83,8 @@ const Index = () => {
       await Promise.all([
         fetchProfile(),
         checkAdminStatus(),
-        fetchMyEvaluations()
+        fetchMyEvaluations(),
+        checkSelfEvaluation()
       ]);
       setLoading(false);
     };
@@ -198,6 +202,23 @@ const Index = () => {
     setSelectedUser(evaluatedUser);
   };
 
+  const checkSelfEvaluation = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("self_evaluations")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      setHasSelfEvaluation(!!data);
+    } catch (error: any) {
+      console.error("Erro ao verificar autoavaliação:", error);
+    }
+  };
+
   const handleSubmitEvaluation = async (data: Evaluation) => {
     if (!selectedUser || !user) return;
 
@@ -274,6 +295,43 @@ const Index = () => {
     return <ChangePasswordDialog open={showPasswordChange} onPasswordChanged={handlePasswordChanged} />;
   }
 
+  // Self-evaluation screen
+  if (showSelfEvaluation) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <DashboardHeader
+          user={{
+            id: profile.id,
+            email: profile.email,
+            name: profile.name || "Usuário",
+            position: profile.position || "Cargo",
+          }}
+          onLogout={handleLogout}
+        />
+        <main className="container mx-auto px-4 py-8 max-w-3xl">
+          <Button 
+            onClick={() => setShowSelfEvaluation(false)}
+            variant="outline"
+            className="mb-6"
+          >
+            Voltar
+          </Button>
+          <SelfEvaluationForm 
+            userId={user.id} 
+            onComplete={() => {
+              setHasSelfEvaluation(true);
+              setShowSelfEvaluation(false);
+              toast({
+                title: "Sucesso",
+                description: "Autoavaliação salva com sucesso.",
+              });
+            }}
+          />
+        </main>
+      </div>
+    );
+  }
+
   // Evaluation form screen
   if (selectedUser) {
     return (
@@ -322,6 +380,30 @@ const Index = () => {
             </Button>
           </div>
         )}
+
+        {/* Self Evaluation Card */}
+        <div className="mb-8">
+          <Card className="border-2 border-primary/20">
+            <CardHeader>
+              <CardTitle>Minha Autoavaliação</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  {hasSelfEvaluation 
+                    ? "Você já completou sua autoavaliação" 
+                    : "Complete sua autoavaliação sobre seu desempenho"}
+                </p>
+                <Button 
+                  onClick={() => setShowSelfEvaluation(true)}
+                  variant={hasSelfEvaluation ? "outline" : "default"}
+                >
+                  {hasSelfEvaluation ? "Ver/Editar" : "Fazer Autoavaliação"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="mb-8">
           <Card>
