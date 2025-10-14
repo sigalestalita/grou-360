@@ -17,7 +17,7 @@ export const CreateUsersButton = () => {
         throw new Error("Você precisa estar autenticado");
       }
 
-      const { data, error } = await supabase.functions.invoke("create-evaluation-users", {
+      const { data, error } = await supabase.functions.invoke("create-users", {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
@@ -25,12 +25,14 @@ export const CreateUsersButton = () => {
 
       if (error) throw error;
 
-      const successCount = data.results.filter((r: any) => r.success).length;
-      const failCount = data.results.filter((r: any) => !r.success).length;
+      const results = data?.results || [];
+      const successCount = results.filter((r: any) => r.status === "success").length;
+      const skippedCount = results.filter((r: any) => r.status === "skipped").length;
+      const errorCount = results.filter((r: any) => r.status === "error").length;
 
       toast({
-        title: "Usuários criados",
-        description: `${successCount} usuários criados com sucesso${failCount > 0 ? `, ${failCount} falharam` : ""}.`,
+        title: "Criação de usuários concluída",
+        description: `Criados: ${successCount} | Já existiam: ${skippedCount} | Erros: ${errorCount}`,
       });
 
       console.log("Resultados:", data.results);
@@ -60,7 +62,7 @@ export const CreateUsersButton = () => {
       ) : (
         <>
           <UserPlus className="mr-2 h-4 w-4" />
-          Criar Usuários de Avaliação
+          Criar Usuários do IEE
         </>
       )}
     </Button>
