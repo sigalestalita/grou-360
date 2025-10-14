@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { AdminAnalytics } from "@/components/AdminAnalytics";
 import { CreateUsersButton } from "@/components/CreateUsersButton";
+import { UserManagement } from "@/components/UserManagement";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -217,6 +218,9 @@ const AdminDashboard = () => {
           <h1 className="text-3xl font-bold">Painel Administrativo</h1>
           <CreateUsersButton />
         </div>
+
+        {/* User Management Section */}
+        <UserManagement />
 
         {loading ? (
           <div className="space-y-2">
