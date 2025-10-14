@@ -134,7 +134,7 @@ const Auth = () => {
               <img src={logoIEE} alt="IEE" className="h-16" />
             </div>
             <div>
-              <CardTitle className="text-2xl text-center">Sistema de Avaliações</CardTitle>
+              <CardTitle className="text-2xl text-center">Sistema de Feedback 360°</CardTitle>
               <CardDescription className="text-center">
                 Faça login para acessar o sistema
               </CardDescription>
