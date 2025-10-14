@@ -40,6 +40,7 @@ const AdminDashboard = () => {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [evaluatorProfiles, setEvaluatorProfiles] = useState<Record<string, Profile>>({});
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -52,19 +53,21 @@ const AdminDashboard = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setAuthChecked(true);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
+    if (!authChecked) return;
     if (!user) {
       navigate("/auth");
       return;
     }
 
     checkAdminStatus();
-  }, [user, navigate]);
+  }, [authChecked, user, navigate]);
 
   const checkAdminStatus = async () => {
     if (!user) return;
