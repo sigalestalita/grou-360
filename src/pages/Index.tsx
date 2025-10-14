@@ -312,12 +312,14 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         {isAdmin && (
           <div className="mb-6">
-            <Link to="/admin">
-              <Button variant="outline" className="w-full md:w-auto">
-                <Shield className="mr-2 h-4 w-4" />
-                Acessar Painel Admin
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              className="w-full md:w-auto"
+              onClick={() => navigate("/admin")}
+            >
+              <Shield className="mr-2 h-4 w-4" />
+              Acessar Painel Admin
+            </Button>
           </div>
         )}
 
