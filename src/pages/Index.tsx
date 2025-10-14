@@ -152,8 +152,14 @@ const Index = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    } finally {
+      // Sempre redirecionar para auth, mesmo se houver erro
+      navigate("/auth", { replace: true });
+    }
   };
 
   const handlePasswordChanged = async (newPassword: string) => {
