@@ -6,7 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Star, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+
+const ratingOptions = [
+  { value: "5", label: "5 - Supera o esperado" },
+  { value: "4", label: "4 - Atende plenamente" },
+  { value: "3", label: "3 - Atende parcialmente" },
+  { value: "2", label: "2 - Atende minimamente" },
+  { value: "1", label: "1 - Não atende" },
+];
 
 interface SelfEvaluationFormProps {
   userId: string;
@@ -129,32 +137,14 @@ export const SelfEvaluationForm = ({ userId, onComplete }: SelfEvaluationFormPro
               onValueChange={(value) => setRating(parseInt(value))}
               className="flex flex-col space-y-2"
             >
-              {[
-                { value: 5, label: "Excelente" },
-                { value: 4, label: "Muito Bom" },
-                { value: 3, label: "Bom" },
-                { value: 2, label: "Regular" },
-                { value: 1, label: "Precisa Melhorar" },
-              ].map((option) => (
+              {ratingOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option.value.toString()} id={`rating-${option.value}`} />
+                  <RadioGroupItem value={option.value} id={`rating-${option.value}`} />
                   <Label
                     htmlFor={`rating-${option.value}`}
-                    className="font-normal cursor-pointer flex items-center gap-2"
+                    className="font-normal cursor-pointer"
                   >
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < option.value
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span>{option.label}</span>
+                    {option.label}
                   </Label>
                 </div>
               ))}
