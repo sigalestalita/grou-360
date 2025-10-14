@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { Session, User } from "@supabase/supabase-js";
 import { generateEvaluationReport } from "@/utils/pdfGenerator";
+import { Footer } from "@/components/Footer";
 
 interface Evaluation {
   id: string;
@@ -366,6 +367,7 @@ const AdminDashboard = () => {
           </>
         )}
       </main>
+      <Footer />
     </div>
   );
 };

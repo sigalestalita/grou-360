@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import logoIEE from "@/assets/Logo_IEE.svg";
 import { z } from "zod";
+import { Footer } from "@/components/Footer";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -201,11 +202,7 @@ const Auth = () => {
           )}
         </CardContent>
       </Card>
-      <footer className="mt-8 text-center">
-        <p className="text-sm text-muted-foreground">
-          Desenvolvido por <span className="font-semibold">Grou</span>
-        </p>
-      </footer>
+      <Footer />
     </div>;
 };
 export default Auth;

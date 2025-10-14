@@ -12,7 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Session, User as SupabaseUser } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Shield } from "lucide-react";
-import logoVerde from "@/assets/Logo_Verde.webp";
+import { Footer } from "@/components/Footer";
 
 interface Profile {
   id: string;
@@ -448,14 +448,7 @@ const Index = () => {
         </div>
       </main>
       
-      <footer className="border-t bg-background/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-sm text-muted-foreground">Desenvolvido por</span>
-            <img src={logoVerde} alt="Grow" className="h-6" />
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
