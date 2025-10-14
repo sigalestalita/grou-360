@@ -50,12 +50,12 @@ export const ChangePasswordDialog = ({ open, onPasswordChanged }: ChangePassword
   };
 
   return (
-    <Dialog open={open}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={() => {}}>
+      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Alterar Senha</DialogTitle>
+          <DialogTitle>Alterar Senha Obrigatória</DialogTitle>
           <DialogDescription>
-            Por favor, altere sua senha provisória para continuar.
+            Esta é sua primeira vez acessando o sistema. Por segurança, você deve alterar sua senha provisória (Grou@2025) antes de continuar.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

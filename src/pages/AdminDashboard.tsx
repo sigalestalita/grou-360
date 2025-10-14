@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { AdminAnalytics } from "@/components/AdminAnalytics";
+import { CreateUsersButton } from "@/components/CreateUsersButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -208,6 +209,12 @@ const AdminDashboard = () => {
       />
 
       <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* Create Users Button */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Painel Administrativo</h1>
+          <CreateUsersButton />
+        </div>
+
         {loading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { UserCard } from "@/components/UserCard";
 import { EvaluationForm } from "@/components/EvaluationForm";
+import { ChangePasswordDialog } from "@/components/ChangePasswordDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -47,6 +48,7 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -101,6 +103,11 @@ const Index = () => {
     }
 
     setProfile(data);
+    
+    // Check if user needs to change password
+    if (data.password_changed === false) {
+      setShowPasswordChange(true);
+    }
   };
 
   const checkAdminStatus = async () => {
@@ -143,6 +150,48 @@ const Index = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
+  };
+
+  const handlePasswordChanged = async (newPassword: string) => {
+    if (!user) return;
+
+    // Update password in Supabase Auth
+    const { error: authError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (authError) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível alterar a senha: " + authError.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update password_changed flag in profile
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ password_changed: true })
+      .eq("id", user.id);
+
+    if (profileError) {
+      console.error("Error updating profile:", profileError);
+    }
+
+    // Hide dialog and force logout
+    setShowPasswordChange(false);
+    
+    toast({
+      title: "Senha alterada com sucesso",
+      description: "Por favor, faça login novamente com sua nova senha.",
+    });
+
+    // Force logout after 2 seconds
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+      navigate("/auth");
+    }, 2000);
   };
 
   const handleEvaluate = (evaluatedUser: Profile) => {
@@ -218,6 +267,11 @@ const Index = () => {
         </div>
       </div>
     );
+  }
+
+  // Show password change dialog if needed (blocks all other UI)
+  if (showPasswordChange) {
+    return <ChangePasswordDialog open={showPasswordChange} onPasswordChanged={handlePasswordChanged} />;
   }
 
   // Evaluation form screen
