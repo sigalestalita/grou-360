@@ -495,7 +495,7 @@ export const generateEvaluationReport = (
   }
 
   const fileName = `Avaliacao360_${evaluatedName.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
-  doc.save(fileName);
+  savePdf(doc, fileName);
   } catch (error) {
     console.error("Erro ao gerar PDF:", error);
   }
