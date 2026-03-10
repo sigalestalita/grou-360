@@ -94,18 +94,18 @@ export const drawKpiCard = (doc: jsPDF, x: number, y: number, w: number, h: numb
   doc.setFontSize(8);
   setColor(doc, C.gray);
   doc.setFont("helvetica", "normal");
-  doc.text(label.toUpperCase(), x + w / 2, y + 10, { align: "center" });
+  doc.text(sanitizeText(label).toUpperCase(), x + w / 2, y + 10, { align: "center" });
 
   doc.setFontSize(22);
   setColor(doc, C.dark);
   doc.setFont("helvetica", "bold");
-  doc.text(value, x + w / 2, y + 24, { align: "center" });
+  doc.text(sanitizeText(value), x + w / 2, y + 24, { align: "center" });
 
   if (sub) {
     doc.setFontSize(7);
     setColor(doc, C.gray);
     doc.setFont("helvetica", "normal");
-    doc.text(sub, x + w / 2, y + 31, { align: "center" });
+    doc.text(sanitizeText(sub), x + w / 2, y + 31, { align: "center" });
   }
 };
 
