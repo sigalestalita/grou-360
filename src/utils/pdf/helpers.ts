@@ -1,6 +1,18 @@
 import jsPDF from "jspdf";
 import { COLORS as C, RGB, MARGIN as m } from "./constants";
 
+export const sanitizeText = (text: string): string => {
+  if (!text) return "";
+  let s = String(text);
+  s = s.replace(/[\u201C\u201D]/g, '"');
+  s = s.replace(/[\u2018\u2019]/g, "'");
+  s = s.replace(/\u2014/g, "--");
+  s = s.replace(/\u2013/g, "-");
+  s = s.replace(/\u2026/g, "...");
+  s = s.replace(/[^\x00-\xFF]/g, "");
+  return s;
+};
+
 export const setColor = (doc: jsPDF, color: RGB) =>
   doc.setTextColor(color[0], color[1], color[2]);
 
