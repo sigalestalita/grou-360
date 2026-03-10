@@ -77,8 +77,8 @@ export const drawRatingBar = (doc: jsPDF, x: number, y: number, rating: number, 
 };
 
 export const drawSectionTitle = (doc: jsPDF, title: string, x: number, y: number, color: RGB = C.primary): number => {
+  const safeTitle = sanitizeText(title);
   doc.setFontSize(16);
-  setColor(doc, color);
   doc.setFont("helvetica", "bold");
   doc.text(title, x, y);
   setDraw(doc, color);
