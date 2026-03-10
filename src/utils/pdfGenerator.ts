@@ -317,7 +317,7 @@ export const generateEvaluationReport = (
     doc.setFontSize(9);
     setColor(doc, C.text);
     doc.setFont("helvetica", "bold");
-    doc.text(`${d.rating} ★`, m, y + 5);
+    doc.text(`${d.rating}`, m, y + 5);
 
     const barMaxW = cw - 50;
     const barW = Math.max((d.count / maxCount) * barMaxW, 2);
