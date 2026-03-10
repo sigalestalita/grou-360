@@ -318,10 +318,16 @@ const AdminDashboard = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-2xl">Relatórios Individuais</CardTitle>
-                <Button onClick={handleExportAll} variant="default">
-                  <Download className="h-4 w-4 mr-2" />
-                  Exportar Todos os Relatórios
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleExportZip} variant="default">
+                    <Archive className="h-4 w-4 mr-2" />
+                    Exportar ZIP
+                  </Button>
+                  <Button onClick={handleExportAll} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar Separados
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
