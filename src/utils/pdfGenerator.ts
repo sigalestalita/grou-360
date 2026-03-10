@@ -153,6 +153,7 @@ export const generateEvaluationReport = (
   _evaluatorProfiles: Record<string, EvaluatorProfile>,
   selfEvaluation?: SelfEvaluation | null
 ) => {
+  try {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
