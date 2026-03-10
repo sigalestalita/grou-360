@@ -317,7 +317,7 @@ export const generateEvaluationReport = (
     doc.setFontSize(9);
     setColor(doc, C.text);
     doc.setFont("helvetica", "bold");
-    doc.text(`${d.rating} ★`, m, y + 5);
+    doc.text(`${d.rating}`, m, y + 5);
 
     const barMaxW = cw - 50;
     const barW = Math.max((d.count / maxCount) * barMaxW, 2);
@@ -509,7 +509,8 @@ export const generateEvaluationReport = (
   const fileName = `Avaliacao360_${evaluatedName.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
   savePdf(doc, fileName);
   } catch (error) {
-    console.error("Erro ao gerar PDF:", error);
+    console.error("Erro ao gerar PDF:", error, (error as Error)?.stack);
+    throw error;
   }
 };
 export const generateAllReports = (
