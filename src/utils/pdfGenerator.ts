@@ -333,7 +333,7 @@ export const generateEvaluationReport = (
   doc.setFontSize(9);
   setColor(doc, C.primary);
   doc.setFont("helvetica", "bold");
-  doc.text("📊 Interpretação", m + 8, y + 8);
+  doc.text("Interpretacao", m + 8, y + 8);
 
   doc.setFontSize(8);
   setColor(doc, C.text);
