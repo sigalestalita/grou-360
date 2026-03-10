@@ -11,9 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { FileDown } from "lucide-react";
+import { FileDown, Download } from "lucide-react";
 import { Session, User } from "@supabase/supabase-js";
-import { generateEvaluationReport } from "@/utils/pdfGenerator";
+import { generateEvaluationReport, generateAllReports } from "@/utils/pdfGenerator";
 import { Footer } from "@/components/Footer";
 
 interface Evaluation {
@@ -22,6 +22,14 @@ interface Evaluation {
   evaluated_user_email: string;
   evaluated_user_name: string;
   evaluated_user_position: string;
+  rating: number;
+  strengths: string;
+  improvements: string;
+  created_at: string;
+}
+
+interface SelfEvaluation {
+  user_id: string;
   rating: number;
   strengths: string;
   improvements: string;
@@ -40,6 +48,7 @@ const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [selfEvaluations, setSelfEvaluations] = useState<SelfEvaluation[]>([]);
   const [evaluatorProfiles, setEvaluatorProfiles] = useState<Record<string, Profile>>({});
   const [isAdmin, setIsAdmin] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -95,7 +104,7 @@ const AdminDashboard = () => {
       }
 
       setIsAdmin(true);
-      fetchEvaluations();
+      fetchData();
     } catch (error: any) {
       toast({
         title: "Erro ao verificar permissões",
@@ -106,30 +115,34 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchEvaluations = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("evaluations")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const [evalResult, selfEvalResult] = await Promise.all([
+        supabase.from("evaluations").select("*").order("created_at", { ascending: false }),
+        supabase.from("self_evaluations").select("*"),
+      ]);
 
-      if (error) throw error;
+      if (evalResult.error) throw evalResult.error;
+      if (selfEvalResult.error) throw selfEvalResult.error;
 
-      setEvaluations(data || []);
+      setEvaluations(evalResult.data || []);
+      setSelfEvaluations(selfEvalResult.data || []);
 
       // Fetch evaluator profiles
-      const evaluatorIds = [...new Set(data?.map(e => e.evaluator_id) || [])];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, name, email")
-        .in("id", evaluatorIds);
+      const evaluatorIds = [...new Set(evalResult.data?.map(e => e.evaluator_id) || [])];
+      if (evaluatorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, name, email")
+          .in("id", evaluatorIds);
 
-      const profilesMap: Record<string, Profile> = {};
-      profiles?.forEach(p => {
-        profilesMap[p.id] = { name: p.name || "Anônimo", email: p.email };
-      });
-      setEvaluatorProfiles(profilesMap);
+        const profilesMap: Record<string, Profile> = {};
+        profiles?.forEach(p => {
+          profilesMap[p.id] = { name: p.name || "Anônimo", email: p.email };
+        });
+        setEvaluatorProfiles(profilesMap);
+      }
     } catch (error: any) {
       toast({
         title: "Erro ao carregar avaliações",
@@ -147,9 +160,26 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     } finally {
-      // Sempre redirecionar para auth, mesmo se houver erro
       navigate("/auth", { replace: true });
     }
+  };
+
+  const getSelfEvaluationForUser = (userEmail: string): SelfEvaluation | null => {
+    // Match self-evaluation by finding the profile with this email, then matching user_id
+    const profileEntry = Object.entries(evaluatorProfiles).find(([_, p]) => p.email === userEmail);
+    if (profileEntry) {
+      const [userId] = profileEntry;
+      return selfEvaluations.find(se => se.user_id === userId) || null;
+    }
+    // Also check evaluations to find user_id from evaluator profiles
+    const evalByUser = evaluations.find(e => {
+      const profile = evaluatorProfiles[e.evaluator_id];
+      return profile?.email === userEmail;
+    });
+    if (evalByUser) {
+      return selfEvaluations.find(se => se.user_id === evalByUser.evaluator_id) || null;
+    }
+    return null;
   };
 
   const handleExportPDF = (evaluatedEmail: string) => {
@@ -167,12 +197,15 @@ const AdminDashboard = () => {
     }
 
     const firstEval = userEvaluations[0];
+    const selfEval = getSelfEvaluationForUser(evaluatedEmail);
+
     generateEvaluationReport(
       firstEval.evaluated_user_name,
       firstEval.evaluated_user_email,
       firstEval.evaluated_user_position,
       userEvaluations,
-      evaluatorProfiles
+      evaluatorProfiles,
+      selfEval
     );
 
     toast({
@@ -181,7 +214,24 @@ const AdminDashboard = () => {
     });
   };
 
-  // Agrupar avaliações por usuário avaliado
+  const handleExportAll = () => {
+    const grouped = Object.values(groupedEvaluations).map((group) => ({
+      name: group.name,
+      email: group.email,
+      position: group.position,
+      evaluations: group.evaluations,
+      selfEvaluation: getSelfEvaluationForUser(group.email),
+    }));
+
+    generateAllReports(grouped, evaluatorProfiles);
+
+    toast({
+      title: "PDFs gerados",
+      description: `${grouped.length} relatórios foram baixados com sucesso.`,
+    });
+  };
+
+  // Group evaluations by evaluated user
   const groupedEvaluations = evaluations.reduce((acc, evaluation) => {
     const key = evaluation.evaluated_user_email;
     if (!acc[key]) {
@@ -197,7 +247,6 @@ const AdminDashboard = () => {
     return acc;
   }, {} as Record<string, { name: string; email: string; position: string; evaluations: Evaluation[]; avgRating: number }>);
 
-  // Calcular média de cada usuário
   Object.values(groupedEvaluations).forEach((group) => {
     const sum = group.evaluations.reduce((acc, e) => acc + e.rating, 0);
     group.avgRating = sum / group.evaluations.length;
@@ -220,13 +269,11 @@ const AdminDashboard = () => {
       />
 
       <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Create Users Button */}
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Painel Administrativo</h1>
           <CreateUsersButton />
         </div>
 
-        {/* User Management Section */}
         <UserManagement />
 
         {loading ? (
@@ -245,16 +292,18 @@ const AdminDashboard = () => {
           </Card>
         ) : (
           <>
-            {/* Analytics Section */}
             <div>
               <h2 className="text-3xl font-bold mb-6">Analytics das Avaliações</h2>
               <AdminAnalytics evaluations={evaluations} />
             </div>
 
-            {/* Relatórios Individuais */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-2xl">Relatórios Individuais</CardTitle>
+                <Button onClick={handleExportAll} variant="default">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar Todos os Relatórios
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -274,9 +323,7 @@ const AdminDashboard = () => {
                           <TableCell>
                             <div className="text-sm">
                               <div className="font-medium">{group.name}</div>
-                              <div className="text-muted-foreground text-xs">
-                                {group.email}
-                              </div>
+                              <div className="text-muted-foreground text-xs">{group.email}</div>
                             </div>
                           </TableCell>
                           <TableCell className="text-sm">{group.position}</TableCell>
@@ -306,7 +353,6 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Todas as Avaliações */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl">Todas as Avaliações</CardTitle>
