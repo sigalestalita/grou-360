@@ -11,9 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { FileDown, Download } from "lucide-react";
+import { FileDown, Download, Archive } from "lucide-react";
 import { Session, User } from "@supabase/supabase-js";
-import { generateEvaluationReport, generateAllReports } from "@/utils/pdfGenerator";
+import { generateEvaluationReport, generateAllReports, generateAllReportsAsZip } from "@/utils/pdfGenerator";
 import { Footer } from "@/components/Footer";
 
 interface Evaluation {
