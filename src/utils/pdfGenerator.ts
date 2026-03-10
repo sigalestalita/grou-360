@@ -1,17 +1,23 @@
 import jsPDF from "jspdf";
 
 // Brand colors
-const COLORS = {
-  primary: { r: 37, g: 99, b: 235 },      // #2563EB
-  primaryDark: { r: 29, g: 78, b: 186 },   // #1D4EBA
-  accent: { r: 22, g: 163, b: 74 },        // #16A34A
-  dark: { r: 4, g: 0, b: 6 },              // #040006
-  gray: { r: 107, g: 114, b: 128 },        // #6B7280
-  lightGray: { r: 243, g: 244, b: 246 },   // #F3F4F6
-  white: { r: 255, g: 255, b: 255 },
-  starFilled: { r: 250, g: 204, b: 21 },   // #FACC15
-  starEmpty: { r: 229, g: 231, b: 235 },   // #E5E7EB
+const C = {
+  primary: [37, 99, 235] as const,       // #2563EB
+  primaryDark: [29, 78, 186] as const,    // #1D4EBA
+  accent: [22, 163, 74] as const,         // #16A34A
+  accentLight: [220, 252, 231] as const,  // #DCFCE7
+  dark: [15, 23, 42] as const,            // #0F172A
+  text: [51, 65, 85] as const,            // #334155
+  gray: [107, 114, 128] as const,         // #6B7280
+  lightGray: [241, 245, 249] as const,    // #F1F5F9
+  border: [226, 232, 240] as const,       // #E2E8F0
+  white: [255, 255, 255] as const,
+  red: [239, 68, 68] as const,            // #EF4444
+  amber: [245, 158, 11] as const,         // #F59E0B
+  yellow: [250, 204, 21] as const,        // #FACC15
 };
+
+type RGB = readonly [number, number, number];
 
 interface Evaluation {
   evaluator_id: string;
@@ -33,404 +39,460 @@ interface EvaluatorProfile {
   email: string;
 }
 
-const drawHeader = (doc: jsPDF, pageWidth: number) => {
-  // Blue header bar
-  doc.setFillColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-  doc.rect(0, 0, pageWidth, 8, "F");
+// ─── Helper functions ───────────────────────────────────────
+
+const setColor = (doc: jsPDF, color: RGB) => {
+  doc.setTextColor(color[0], color[1], color[2]);
 };
 
-const drawFooter = (doc: jsPDF, pageWidth: number, pageHeight: number, pageNum: number, totalPages: number) => {
-  // Footer line
-  doc.setDrawColor(COLORS.lightGray.r, COLORS.lightGray.g, COLORS.lightGray.b);
-  doc.setLineWidth(0.5);
-  doc.line(20, pageHeight - 20, pageWidth - 20, pageHeight - 20);
+const setFill = (doc: jsPDF, color: RGB) => {
+  doc.setFillColor(color[0], color[1], color[2]);
+};
 
-  // Page number
-  doc.setFontSize(8);
-  doc.setTextColor(COLORS.gray.r, COLORS.gray.g, COLORS.gray.b);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Página ${pageNum} de ${totalPages}`, pageWidth / 2, pageHeight - 12, { align: "center" });
+const setDraw = (doc: jsPDF, color: RGB) => {
+  doc.setDrawColor(color[0], color[1], color[2]);
+};
 
-  // Grou branding
+const drawHeader = (doc: jsPDF, w: number) => {
+  setFill(doc, C.primary);
+  doc.rect(0, 0, w, 6, "F");
+  setFill(doc, C.accent);
+  doc.rect(0, 6, w, 1.5, "F");
+};
+
+const drawFooter = (doc: jsPDF, w: number, h: number, page: number, total: number) => {
+  setDraw(doc, C.border);
+  doc.setLineWidth(0.3);
+  doc.line(20, h - 18, w - 20, h - 18);
+
   doc.setFontSize(7);
-  doc.text("Powered by Grou | grou360.lovable.app", pageWidth / 2, pageHeight - 7, { align: "center" });
+  setColor(doc, C.gray);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Página ${page} de ${total}`, w / 2, h - 12, { align: "center" });
+  doc.text("Relatório Confidencial • Grou 360°", w / 2, h - 7, { align: "center" });
 };
 
-const drawRatingBar = (doc: jsPDF, x: number, y: number, rating: number, width: number = 60, height: number = 8) => {
-  // Background
-  doc.setFillColor(COLORS.starEmpty.r, COLORS.starEmpty.g, COLORS.starEmpty.b);
-  doc.roundedRect(x, y, width, height, 2, 2, "F");
-
-  // Filled portion
-  const filledWidth = (rating / 5) * width;
-  if (filledWidth > 0) {
-    doc.setFillColor(COLORS.accent.r, COLORS.accent.g, COLORS.accent.b);
-    doc.roundedRect(x, y, filledWidth, height, 2, 2, "F");
-  }
-
-  // Rating text
-  doc.setFontSize(8);
-  doc.setTextColor(COLORS.white.r, COLORS.white.g, COLORS.white.b);
-  doc.setFont("helvetica", "bold");
-  doc.text(`${rating.toFixed(1)} / 5`, x + width / 2, y + height / 2 + 2.5, { align: "center" });
-};
-
-const drawStars = (doc: jsPDF, x: number, y: number, rating: number) => {
-  const starSize = 5;
-  const gap = 1.5;
-  for (let i = 0; i < 5; i++) {
-    if (i < Math.round(rating)) {
-      doc.setFillColor(COLORS.starFilled.r, COLORS.starFilled.g, COLORS.starFilled.b);
-    } else {
-      doc.setFillColor(COLORS.starEmpty.r, COLORS.starEmpty.g, COLORS.starEmpty.b);
-    }
-    const sx = x + i * (starSize + gap);
-    doc.roundedRect(sx, y, starSize, starSize, 1, 1, "F");
-  }
-};
-
-const checkPageBreak = (doc: jsPDF, yPosition: number, needed: number, pageHeight: number, pageWidth: number): number => {
-  if (yPosition + needed > pageHeight - 30) {
+const checkPage = (doc: jsPDF, y: number, need: number, ph: number, pw: number): number => {
+  if (y + need > ph - 25) {
     doc.addPage();
-    drawHeader(doc, pageWidth);
+    drawHeader(doc, pw);
     return 18;
   }
-  return yPosition;
+  return y;
 };
 
-const drawWrappedText = (doc: jsPDF, text: string, x: number, y: number, maxWidth: number, pageHeight: number, pageWidth: number): number => {
-  const lines = doc.splitTextToSize(text || "N/A", maxWidth);
-  let currentY = y;
+const wrapText = (doc: jsPDF, text: string, x: number, y: number, maxW: number, ph: number, pw: number): number => {
+  const lines: string[] = doc.splitTextToSize(text || "—", maxW);
+  let cy = y;
   for (const line of lines) {
-    currentY = checkPageBreak(doc, currentY, 5, pageHeight, pageWidth);
-    doc.text(line, x, currentY);
-    currentY += 5;
+    cy = checkPage(doc, cy, 5, ph, pw);
+    doc.text(line, x, cy);
+    cy += 4.5;
   }
-  return currentY;
+  return cy;
 };
+
+const drawRatingBar = (doc: jsPDF, x: number, y: number, rating: number, w: number = 50, h: number = 6) => {
+  // Track background
+  setFill(doc, C.border);
+  doc.roundedRect(x, y, w, h, h / 2, h / 2, "F");
+
+  // Filled portion
+  const fw = Math.max((rating / 5) * w, h);
+  const color: RGB = rating >= 4 ? C.accent : rating >= 3 ? C.amber : C.red;
+  setFill(doc, color);
+  doc.roundedRect(x, y, fw, h, h / 2, h / 2, "F");
+
+  // Text
+  doc.setFontSize(7);
+  setColor(doc, C.white);
+  doc.setFont("helvetica", "bold");
+  doc.text(`${rating.toFixed(1)}`, x + fw / 2, y + h / 2 + 2, { align: "center" });
+};
+
+const drawSectionTitle = (doc: jsPDF, title: string, x: number, y: number, color: RGB = C.primary): number => {
+  doc.setFontSize(16);
+  setColor(doc, color);
+  doc.setFont("helvetica", "bold");
+  doc.text(title, x, y);
+  setDraw(doc, color);
+  doc.setLineWidth(0.8);
+  doc.line(x, y + 2, x + doc.getTextWidth(title), y + 2);
+  return y + 10;
+};
+
+const drawKpiCard = (doc: jsPDF, x: number, y: number, w: number, h: number, label: string, value: string, sub?: string) => {
+  setFill(doc, C.lightGray);
+  doc.roundedRect(x, y, w, h, 3, 3, "F");
+
+  doc.setFontSize(8);
+  setColor(doc, C.gray);
+  doc.setFont("helvetica", "normal");
+  doc.text(label.toUpperCase(), x + w / 2, y + 10, { align: "center" });
+
+  doc.setFontSize(22);
+  setColor(doc, C.dark);
+  doc.setFont("helvetica", "bold");
+  doc.text(value, x + w / 2, y + 24, { align: "center" });
+
+  if (sub) {
+    doc.setFontSize(7);
+    setColor(doc, C.gray);
+    doc.setFont("helvetica", "normal");
+    doc.text(sub, x + w / 2, y + 31, { align: "center" });
+  }
+};
+
+// ─── Main Report Generator ──────────────────────────────────
 
 export const generateEvaluationReport = (
   evaluatedName: string,
   evaluatedEmail: string,
   evaluatedPosition: string,
   evaluations: Evaluation[],
-  evaluatorProfiles: Record<string, EvaluatorProfile>,
+  _evaluatorProfiles: Record<string, EvaluatorProfile>,
   selfEvaluation?: SelfEvaluation | null
 ) => {
   const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 20;
-  const contentWidth = pageWidth - 2 * margin;
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+  const m = 20;
+  const cw = pw - 2 * m;
 
   // ═══════════════════════════════════════
-  // COVER PAGE
+  // PAGE 1: COVER
   // ═══════════════════════════════════════
-  
-  // Full blue background for cover
-  doc.setFillColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-  doc.rect(0, 0, pageWidth, pageHeight, "F");
+  setFill(doc, C.primary);
+  doc.rect(0, 0, pw, ph, "F");
 
-  // White accent stripe
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, pageHeight * 0.38, pageWidth, 2, "F");
+  // Decorative elements
+  setFill(doc, C.primaryDark);
+  doc.rect(0, 0, pw, 90, "F");
 
-  // IEE text logo
-  doc.setFontSize(28);
-  doc.setTextColor(COLORS.white.r, COLORS.white.g, COLORS.white.b);
+  // Logo text
+  doc.setFontSize(32);
+  setColor(doc, C.white);
   doc.setFont("helvetica", "bold");
-  doc.text("IEE", pageWidth / 2, 55, { align: "center" });
-
-  doc.setFontSize(10);
+  doc.text("IEE", pw / 2, 40, { align: "center" });
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text("Instituto de Estudos Empresariais", pageWidth / 2, 65, { align: "center" });
+  doc.text("INSTITUTO DE ESTUDOS EMPRESARIAIS", pw / 2, 50, { align: "center" });
 
-  // Title
-  doc.setFontSize(36);
+  // White accent line
+  setFill(doc, C.white);
+  doc.rect(pw / 2 - 30, 58, 60, 1.5, "F");
+
+  // Title block
+  doc.setFontSize(38);
   doc.setFont("helvetica", "bold");
-  doc.text("AVALIAÇÃO", pageWidth / 2, pageHeight * 0.32, { align: "center" });
-  doc.text("360°", pageWidth / 2, pageHeight * 0.32 + 15, { align: "center" });
+  doc.text("AVALIAÇÃO", pw / 2, 115, { align: "center" });
+  doc.setFontSize(52);
+  doc.text("360°", pw / 2, 135, { align: "center" });
 
   // Member info card
-  const cardY = pageHeight * 0.5;
-  doc.setFillColor(255, 255, 255);
-  doc.roundedRect(margin + 10, cardY, contentWidth - 20, 60, 4, 4, "F");
+  const cardY = 165;
+  setFill(doc, C.white);
+  doc.roundedRect(m + 15, cardY, cw - 30, 55, 4, 4, "F");
 
-  doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text("NOME", margin + 20, cardY + 15);
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.text(evaluatedName, margin + 20, cardY + 24);
-
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(COLORS.gray.r, COLORS.gray.g, COLORS.gray.b);
-  doc.text("CARGO", margin + 20, cardY + 36);
-  doc.setFontSize(12);
-  doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-  doc.text(evaluatedPosition, margin + 20, cardY + 44);
-
-  doc.setFontSize(9);
-  doc.setTextColor(COLORS.gray.r, COLORS.gray.g, COLORS.gray.b);
-  doc.text("DATA DO RELATÓRIO", margin + 20, cardY + 54);
-  doc.setFontSize(10);
-  doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-  doc.text(new Date().toLocaleDateString("pt-BR"), margin + 20, cardY + 62 - 2);
-
-  // Footer on cover
   doc.setFontSize(8);
-  doc.setTextColor(200, 210, 255);
-  doc.text("Relatório gerado por Grou 360° • Confidencial", pageWidth / 2, pageHeight - 15, { align: "center" });
+  setColor(doc, C.gray);
+  doc.setFont("helvetica", "normal");
+  doc.text("COLABORADOR", m + 25, cardY + 12);
+  doc.setFontSize(16);
+  setColor(doc, C.dark);
+  doc.setFont("helvetica", "bold");
+  doc.text(evaluatedName, m + 25, cardY + 22);
+
+  doc.setFontSize(8);
+  setColor(doc, C.gray);
+  doc.setFont("helvetica", "normal");
+  doc.text("CARGO", m + 25, cardY + 33);
+  doc.setFontSize(11);
+  setColor(doc, C.dark);
+  doc.setFont("helvetica", "normal");
+  doc.text(evaluatedPosition, m + 25, cardY + 41);
+
+  doc.setFontSize(8);
+  setColor(doc, C.gray);
+  doc.text("DATA", m + 25, cardY + 50);
+  doc.setFontSize(10);
+  setColor(doc, C.dark);
+  doc.text(new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }), m + 25, cardY + 57 - 2);
+
+  // Footer
+  doc.setFontSize(7);
+  setColor(doc, [180, 200, 255]);
+  doc.text("Relatório gerado por Grou 360° • Documento Confidencial", pw / 2, ph - 12, { align: "center" });
 
   // ═══════════════════════════════════════
-  // SUMMARY PAGE
+  // PAGE 2: ANALYTICS DASHBOARD
   // ═══════════════════════════════════════
   doc.addPage();
-  drawHeader(doc, pageWidth);
+  drawHeader(doc, pw);
+  let y = 18;
 
-  let y = 22;
+  y = drawSectionTitle(doc, "Painel Analítico", m, y);
 
-  // Section title
-  doc.setFontSize(20);
-  doc.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-  doc.setFont("helvetica", "bold");
-  doc.text("Resumo da Avaliação", margin, y);
-  y += 4;
-
-  // Underline
-  doc.setDrawColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-  doc.setLineWidth(1);
-  doc.line(margin, y, margin + 60, y);
-  y += 12;
-
-  // Stats cards
+  // KPI Cards Row
   const avgRating = evaluations.length > 0
-    ? evaluations.reduce((sum, e) => sum + e.rating, 0) / evaluations.length
+    ? evaluations.reduce((s, e) => s + e.rating, 0) / evaluations.length
     : 0;
 
-  // Card 1: Average Rating
-  doc.setFillColor(COLORS.lightGray.r, COLORS.lightGray.g, COLORS.lightGray.b);
-  doc.roundedRect(margin, y, contentWidth / 2 - 5, 45, 3, 3, "F");
+  const ratings = evaluations.map(e => e.rating);
+  const minRating = ratings.length > 0 ? Math.min(...ratings) : 0;
+  const maxRating = ratings.length > 0 ? Math.max(...ratings) : 0;
+  const median = (() => {
+    if (ratings.length === 0) return 0;
+    const sorted = [...ratings].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  })();
+  const stdDev = (() => {
+    if (ratings.length < 2) return 0;
+    const mean = avgRating;
+    const variance = ratings.reduce((sum, r) => sum + (r - mean) ** 2, 0) / ratings.length;
+    return Math.sqrt(variance);
+  })();
 
+  const cardW = (cw - 15) / 4;
+  drawKpiCard(doc, m, y, cardW, 36, "Média Geral", avgRating.toFixed(1), "de 5.0");
+  drawKpiCard(doc, m + cardW + 5, y, cardW, 36, "Mediana", median.toFixed(1), "de 5.0");
+  drawKpiCard(doc, m + (cardW + 5) * 2, y, cardW, 36, "Avaliações", `${evaluations.length}`, "recebidas");
+  drawKpiCard(doc, m + (cardW + 5) * 3, y, cardW, 36, "Desvio Padrão", stdDev.toFixed(2), `Min: ${minRating} / Max: ${maxRating}`);
+  y += 44;
+
+  // Rating bar comparison
+  y = drawSectionTitle(doc, "Média vs. Autoavaliação", m, y, C.dark);
+
+  // Peer average bar
   doc.setFontSize(9);
-  doc.setTextColor(COLORS.gray.r, COLORS.gray.g, COLORS.gray.b);
+  setColor(doc, C.text);
   doc.setFont("helvetica", "normal");
-  doc.text("MÉDIA GERAL", margin + 10, y + 12);
-
-  doc.setFontSize(28);
-  doc.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-  doc.setFont("helvetica", "bold");
-  doc.text(avgRating.toFixed(1), margin + 10, y + 30);
-
-  doc.setFontSize(12);
-  doc.setTextColor(COLORS.gray.r, COLORS.gray.g, COLORS.gray.b);
-  doc.text("/ 5", margin + 35, y + 30);
-
-  drawRatingBar(doc, margin + 10, y + 35, avgRating, contentWidth / 2 - 25, 6);
-
-  // Card 2: Total evaluations + self-evaluation
-  const card2X = margin + contentWidth / 2 + 5;
-  doc.setFillColor(COLORS.lightGray.r, COLORS.lightGray.g, COLORS.lightGray.b);
-  doc.roundedRect(card2X, y, contentWidth / 2 - 5, 45, 3, 3, "F");
-
-  doc.setFontSize(9);
-  doc.setTextColor(COLORS.gray.r, COLORS.gray.g, COLORS.gray.b);
-  doc.setFont("helvetica", "normal");
-  doc.text("TOTAL DE AVALIAÇÕES", card2X + 10, y + 12);
-
-  doc.setFontSize(28);
-  doc.setTextColor(COLORS.accent.r, COLORS.accent.g, COLORS.accent.b);
-  doc.setFont("helvetica", "bold");
-  doc.text(`${evaluations.length}`, card2X + 10, y + 30);
+  doc.text("Avaliação dos pares", m, y + 4);
+  drawRatingBar(doc, m + 55, y, avgRating, cw - 55, 7);
+  y += 14;
 
   if (selfEvaluation) {
-    doc.setFontSize(9);
-    doc.setTextColor(COLORS.gray.r, COLORS.gray.g, COLORS.gray.b);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Autoavaliação: ${selfEvaluation.rating}/5`, card2X + 10, y + 40);
+    doc.text("Autoavaliação", m, y + 4);
+    drawRatingBar(doc, m + 55, y, selfEvaluation.rating, cw - 55, 7);
+    y += 14;
+
+    const gap = selfEvaluation.rating - avgRating;
+    doc.setFontSize(8);
+    setColor(doc, C.gray);
+    doc.setFont("helvetica", "italic");
+    const gapText = gap > 0
+      ? `A autoavaliação está ${gap.toFixed(1)} ponto(s) acima da média dos pares`
+      : gap < 0
+        ? `A autoavaliação está ${Math.abs(gap).toFixed(1)} ponto(s) abaixo da média dos pares`
+        : "A autoavaliação está alinhada com a média dos pares";
+    doc.text(gapText, m, y + 3);
+    y += 10;
   }
 
-  y += 55;
+  // Distribution chart (horizontal bar chart)
+  y += 3;
+  y = drawSectionTitle(doc, "Distribuição de Notas", m, y, C.dark);
 
-  // Individual ratings overview
-  doc.setFontSize(14);
-  doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
+  const dist = [1, 2, 3, 4, 5].map(r => ({
+    rating: r,
+    count: evaluations.filter(e => e.rating === r).length,
+  }));
+  const maxCount = Math.max(...dist.map(d => d.count), 1);
+
+  for (const d of dist) {
+    doc.setFontSize(9);
+    setColor(doc, C.text);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${d.rating} ★`, m, y + 5);
+
+    const barMaxW = cw - 50;
+    const barW = Math.max((d.count / maxCount) * barMaxW, 2);
+
+    setFill(doc, C.border);
+    doc.roundedRect(m + 20, y + 1, barMaxW, 5, 2, 2, "F");
+
+    const barColor: RGB = d.rating >= 4 ? C.accent : d.rating >= 3 ? C.amber : C.red;
+    setFill(doc, barColor);
+    doc.roundedRect(m + 20, y + 1, barW, 5, 2, 2, "F");
+
+    doc.setFontSize(8);
+    setColor(doc, C.text);
+    doc.setFont("helvetica", "normal");
+    const pct = evaluations.length > 0 ? ((d.count / evaluations.length) * 100).toFixed(0) : "0";
+    doc.text(`${d.count} (${pct}%)`, m + 20 + barMaxW + 3, y + 5);
+    y += 9;
+  }
+
+  // Performance interpretation
+  y += 5;
+  y = checkPage(doc, y, 35, ph, pw);
+  setFill(doc, C.lightGray);
+  doc.roundedRect(m, y, cw, 28, 3, 3, "F");
+
+  doc.setFontSize(9);
+  setColor(doc, C.primary);
   doc.setFont("helvetica", "bold");
-  doc.text("Notas Individuais", margin, y);
+  doc.text("📊 Interpretação", m + 8, y + 8);
+
+  doc.setFontSize(8);
+  setColor(doc, C.text);
+  doc.setFont("helvetica", "normal");
+  const interpretation = avgRating >= 4.5
+    ? "Desempenho excepcional. O colaborador demonstra consistência elevada nas competências avaliadas."
+    : avgRating >= 3.5
+      ? "Bom desempenho. O colaborador atende às expectativas com oportunidades pontuais de desenvolvimento."
+      : avgRating >= 2.5
+        ? "Desempenho adequado. Há áreas significativas que podem ser desenvolvidas."
+        : "Atenção necessária. Recomenda-se um plano de desenvolvimento individual.";
+  const interpLines = doc.splitTextToSize(interpretation, cw - 16);
+  doc.text(interpLines, m + 8, y + 15);
+
+  // ═══════════════════════════════════════
+  // PAGE 3+: ANONYMOUS EVALUATIONS
+  // ═══════════════════════════════════════
+  doc.addPage();
+  drawHeader(doc, pw);
+  y = 18;
+
+  y = drawSectionTitle(doc, "Avaliações Recebidas", m, y);
+
+  doc.setFontSize(8);
+  setColor(doc, C.gray);
+  doc.setFont("helvetica", "italic");
+  doc.text("As avaliações são apresentadas de forma anônima para preservar a confidencialidade.", m, y);
   y += 8;
 
   evaluations.forEach((evaluation, index) => {
-    y = checkPageBreak(doc, y, 14, pageHeight, pageWidth);
-    const evaluatorName = evaluatorProfiles[evaluation.evaluator_id]?.name || "Avaliador";
+    y = checkPage(doc, y, 50, ph, pw);
+
+    // Card container
+    const cardStartY = y - 2;
+
+    // Card header with number
+    setFill(doc, index % 2 === 0 ? C.lightGray : C.white);
+    doc.roundedRect(m, y - 3, cw, 11, 2, 2, "F");
+
+    setFill(doc, C.primary);
+    doc.roundedRect(m, y - 3, 28, 11, 2, 2, "F");
+    // Fix corner overlap
+    doc.rect(m + 26, y - 3, 2, 11, "F");
 
     doc.setFontSize(9);
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-    doc.setFont("helvetica", "normal");
-    doc.text(`${index + 1}. ${evaluatorName}`, margin, y + 4);
-
-    drawRatingBar(doc, margin + 80, y, evaluation.rating, 50, 7);
-    y += 12;
-  });
-
-  // ═══════════════════════════════════════
-  // DETAILED EVALUATIONS
-  // ═══════════════════════════════════════
-  doc.addPage();
-  drawHeader(doc, pageWidth);
-  y = 22;
-
-  doc.setFontSize(20);
-  doc.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-  doc.setFont("helvetica", "bold");
-  doc.text("Avaliações Detalhadas", margin, y);
-  y += 4;
-  doc.setDrawColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-  doc.setLineWidth(1);
-  doc.line(margin, y, margin + 70, y);
-  y += 12;
-
-  evaluations.forEach((evaluation, index) => {
-    // Estimate space needed (min ~50px)
-    y = checkPageBreak(doc, y, 60, pageHeight, pageWidth);
-
-    const evaluatorName = evaluatorProfiles[evaluation.evaluator_id]?.name || "Avaliador";
-    const evaluatorEmail = evaluatorProfiles[evaluation.evaluator_id]?.email || "";
-    const evaluationDate = new Date(evaluation.created_at).toLocaleDateString("pt-BR");
-
-    // Card background
-    doc.setFillColor(index % 2 === 0 ? 249 : 243, index % 2 === 0 ? 250 : 244, index % 2 === 0 ? 251 : 246);
-    doc.roundedRect(margin, y - 2, contentWidth, 10, 2, 2, "F");
-
-    // Evaluation header
-    doc.setFontSize(11);
-    doc.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
+    setColor(doc, C.white);
     doc.setFont("helvetica", "bold");
-    doc.text(`Avaliação ${index + 1}`, margin + 5, y + 5);
+    doc.text(`#${String(index + 1).padStart(2, "0")}`, m + 5, y + 4);
 
-    // Rating on the right
-    drawStars(doc, pageWidth - margin - 35, y, evaluation.rating);
+    // Rating on right
+    drawRatingBar(doc, pw - m - 45, y - 1, evaluation.rating, 40, 7);
 
-    y += 14;
-
-    // Evaluator info
-    doc.setFontSize(9);
-    doc.setTextColor(COLORS.gray.r, COLORS.gray.g, COLORS.gray.b);
+    // Date
+    const evalDate = new Date(evaluation.created_at).toLocaleDateString("pt-BR");
+    doc.setFontSize(7);
+    setColor(doc, C.gray);
     doc.setFont("helvetica", "normal");
-    doc.text(`Avaliador: ${evaluatorName}${evaluatorEmail ? ` (${evaluatorEmail})` : ""}`, margin + 5, y);
-    y += 5;
-    doc.text(`Data: ${evaluationDate}  •  Nota: ${evaluation.rating}/5`, margin + 5, y);
-    y += 8;
+    doc.text(evalDate, m + 33, y + 4);
+
+    y += 13;
 
     // Strengths
-    doc.setFontSize(10);
-    doc.setTextColor(COLORS.accent.r, COLORS.accent.g, COLORS.accent.b);
-    doc.setFont("helvetica", "bold");
-    doc.text("▸ Pontos Fortes", margin + 5, y);
-    y += 5;
-
     doc.setFontSize(9);
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
+    setColor(doc, C.accent);
+    doc.setFont("helvetica", "bold");
+    doc.text("Pontos Fortes", m + 5, y);
+    y += 4;
+
+    doc.setFontSize(8.5);
+    setColor(doc, C.text);
     doc.setFont("helvetica", "normal");
-    y = drawWrappedText(doc, evaluation.strengths, margin + 5, y, contentWidth - 10, pageHeight, pageWidth);
-    y += 3;
+    y = wrapText(doc, evaluation.strengths, m + 5, y, cw - 10, ph, pw);
+    y += 2;
 
     // Improvements
-    y = checkPageBreak(doc, y, 15, pageHeight, pageWidth);
-    doc.setFontSize(10);
-    doc.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-    doc.setFont("helvetica", "bold");
-    doc.text("▸ Áreas de Melhoria", margin + 5, y);
-    y += 5;
-
+    y = checkPage(doc, y, 12, ph, pw);
     doc.setFontSize(9);
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
+    setColor(doc, C.primary);
+    doc.setFont("helvetica", "bold");
+    doc.text("Oportunidades de Melhoria", m + 5, y);
+    y += 4;
+
+    doc.setFontSize(8.5);
+    setColor(doc, C.text);
     doc.setFont("helvetica", "normal");
-    y = drawWrappedText(doc, evaluation.improvements, margin + 5, y, contentWidth - 10, pageHeight, pageWidth);
-    y += 8;
+    y = wrapText(doc, evaluation.improvements, m + 5, y, cw - 10, ph, pw);
+    y += 6;
 
     // Separator
     if (index < evaluations.length - 1) {
-      doc.setDrawColor(COLORS.lightGray.r, COLORS.lightGray.g, COLORS.lightGray.b);
-      doc.setLineWidth(0.3);
-      doc.line(margin + 10, y, pageWidth - margin - 10, y);
-      y += 8;
+      setDraw(doc, C.border);
+      doc.setLineWidth(0.2);
+      doc.line(m + 5, y, pw - m - 5, y);
+      y += 6;
     }
   });
 
   // ═══════════════════════════════════════
-  // SELF-EVALUATION
+  // SELF-EVALUATION SECTION
   // ═══════════════════════════════════════
   if (selfEvaluation) {
-    y = checkPageBreak(doc, y, 70, pageHeight, pageWidth);
+    y = checkPage(doc, y, 60, ph, pw);
+    y += 5;
 
-    if (y < 30) {
-      // We're on a fresh page already
-    } else {
-      y += 5;
-    }
+    y = drawSectionTitle(doc, "Autoavaliação", m, y, C.accent);
 
-    doc.setFontSize(16);
-    doc.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
+    // Card
+    setFill(doc, C.accentLight);
+    doc.roundedRect(m, y - 2, cw, 11, 2, 2, "F");
+
+    setFill(doc, C.accent);
+    doc.roundedRect(m, y - 2, 40, 11, 2, 2, "F");
+    doc.rect(m + 38, y - 2, 2, 11, "F");
+
+    doc.setFontSize(9);
+    setColor(doc, C.white);
     doc.setFont("helvetica", "bold");
-    doc.text("Autoavaliação", margin, y);
-    y += 4;
-    doc.setDrawColor(COLORS.accent.r, COLORS.accent.g, COLORS.accent.b);
-    doc.setLineWidth(1);
-    doc.line(margin, y, margin + 45, y);
-    y += 10;
+    doc.text("PRÓPRIA", m + 6, y + 5);
 
-    // Self-eval card
-    doc.setFillColor(240, 253, 244); // light green bg
-    doc.roundedRect(margin, y - 4, contentWidth, 12, 2, 2, "F");
+    drawRatingBar(doc, pw - m - 45, y, selfEvaluation.rating, 40, 7);
 
-    doc.setFontSize(10);
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
-    doc.setFont("helvetica", "bold");
-    doc.text("Nota da Autoavaliação", margin + 5, y + 4);
-    drawRatingBar(doc, margin + 80, y - 1, selfEvaluation.rating, 50, 7);
-    y += 16;
+    y += 15;
 
     // Strengths
-    doc.setFontSize(10);
-    doc.setTextColor(COLORS.accent.r, COLORS.accent.g, COLORS.accent.b);
-    doc.setFont("helvetica", "bold");
-    doc.text("▸ Pontos Fortes", margin + 5, y);
-    y += 5;
-
     doc.setFontSize(9);
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
+    setColor(doc, C.accent);
+    doc.setFont("helvetica", "bold");
+    doc.text("Pontos Fortes", m + 5, y);
+    y += 4;
+
+    doc.setFontSize(8.5);
+    setColor(doc, C.text);
     doc.setFont("helvetica", "normal");
-    y = drawWrappedText(doc, selfEvaluation.strengths, margin + 5, y, contentWidth - 10, pageHeight, pageWidth);
-    y += 3;
+    y = wrapText(doc, selfEvaluation.strengths, m + 5, y, cw - 10, ph, pw);
+    y += 2;
 
     // Improvements
-    y = checkPageBreak(doc, y, 15, pageHeight, pageWidth);
-    doc.setFontSize(10);
-    doc.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-    doc.setFont("helvetica", "bold");
-    doc.text("▸ Áreas de Melhoria", margin + 5, y);
-    y += 5;
-
+    y = checkPage(doc, y, 12, ph, pw);
     doc.setFontSize(9);
-    doc.setTextColor(COLORS.dark.r, COLORS.dark.g, COLORS.dark.b);
+    setColor(doc, C.primary);
+    doc.setFont("helvetica", "bold");
+    doc.text("Oportunidades de Melhoria", m + 5, y);
+    y += 4;
+
+    doc.setFontSize(8.5);
+    setColor(doc, C.text);
     doc.setFont("helvetica", "normal");
-    y = drawWrappedText(doc, selfEvaluation.improvements, margin + 5, y, contentWidth - 10, pageHeight, pageWidth);
+    y = wrapText(doc, selfEvaluation.improvements, m + 5, y, cw - 10, ph, pw);
   }
 
   // ═══════════════════════════════════════
-  // ADD FOOTERS TO ALL PAGES
+  // FOOTERS
   // ═══════════════════════════════════════
   const totalPages = doc.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
+  for (let i = 2; i <= totalPages; i++) {
     doc.setPage(i);
-    if (i > 1) { // Skip cover page footer (it has its own)
-      drawFooter(doc, pageWidth, pageHeight, i - 1, totalPages - 1);
-    }
+    drawFooter(doc, pw, ph, i - 1, totalPages - 1);
   }
 
-  // Save
   const fileName = `Avaliacao360_${evaluatedName.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(fileName);
 };
