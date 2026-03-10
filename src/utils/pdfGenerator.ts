@@ -39,6 +39,18 @@ interface EvaluatorProfile {
   email: string;
 }
 
+const savePdf = (doc: jsPDF, fileName: string) => {
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+};
+
 // ─── Helper functions ───────────────────────────────────────
 
 const setColor = (doc: jsPDF, color: RGB) => {
@@ -495,7 +507,7 @@ export const generateEvaluationReport = (
   }
 
   const fileName = `Avaliacao360_${evaluatedName.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
-  doc.save(fileName);
+  savePdf(doc, fileName);
   } catch (error) {
     console.error("Erro ao gerar PDF:", error);
   }
