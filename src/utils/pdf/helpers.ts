@@ -51,7 +51,7 @@ export const checkPage = (doc: jsPDF, y: number, need: number, ph: number, pw: n
 };
 
 export const wrapText = (doc: jsPDF, text: string, x: number, y: number, maxW: number, ph: number, pw: number): number => {
-  const lines: string[] = doc.splitTextToSize(text || "-", maxW);
+  const lines: string[] = doc.splitTextToSize(sanitizeText(text) || "-", maxW);
   let cy = y;
   for (const line of lines) {
     cy = checkPage(doc, cy, 5, ph, pw);
