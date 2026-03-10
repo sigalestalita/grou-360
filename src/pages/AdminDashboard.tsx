@@ -11,9 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { FileDown, Download } from "lucide-react";
+import { FileDown, Download, Archive } from "lucide-react";
 import { Session, User } from "@supabase/supabase-js";
-import { generateEvaluationReport, generateAllReports } from "@/utils/pdfGenerator";
+import { generateEvaluationReport, generateAllReports, generateAllReportsAsZip } from "@/utils/pdfGenerator";
 import { Footer } from "@/components/Footer";
 
 interface Evaluation {
@@ -214,8 +214,8 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleExportAll = () => {
-    const grouped = Object.values(groupedEvaluations).map((group) => ({
+  const getGroupedData = () =>
+    Object.values(groupedEvaluations).map((group) => ({
       name: group.name,
       email: group.email,
       position: group.position,
@@ -223,12 +223,30 @@ const AdminDashboard = () => {
       selfEvaluation: getSelfEvaluationForUser(group.email),
     }));
 
+  const handleExportAll = () => {
+    const grouped = getGroupedData();
     generateAllReports(grouped, evaluatorProfiles);
-
     toast({
       title: "PDFs gerados",
       description: `${grouped.length} relatórios foram baixados com sucesso.`,
     });
+  };
+
+  const handleExportZip = async () => {
+    try {
+      const grouped = getGroupedData();
+      await generateAllReportsAsZip(grouped);
+      toast({
+        title: "ZIP gerado",
+        description: `${grouped.length} relatórios exportados em um único arquivo ZIP.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao gerar ZIP",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   // Group evaluations by evaluated user
@@ -300,10 +318,16 @@ const AdminDashboard = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-2xl">Relatórios Individuais</CardTitle>
-                <Button onClick={handleExportAll} variant="default">
-                  <Download className="h-4 w-4 mr-2" />
-                  Exportar Todos os Relatórios
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleExportZip} variant="default">
+                    <Archive className="h-4 w-4 mr-2" />
+                    Exportar ZIP
+                  </Button>
+                  <Button onClick={handleExportAll} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar Separados
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
