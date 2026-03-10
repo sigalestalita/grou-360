@@ -39,6 +39,18 @@ interface EvaluatorProfile {
   email: string;
 }
 
+const savePdf = (doc: jsPDF, fileName: string) => {
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+};
+
 // ─── Helper functions ───────────────────────────────────────
 
 const setColor = (doc: jsPDF, color: RGB) => {
