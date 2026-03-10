@@ -80,10 +80,10 @@ export const drawSectionTitle = (doc: jsPDF, title: string, x: number, y: number
   const safeTitle = sanitizeText(title);
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text(title, x, y);
+  doc.text(safeTitle, x, y);
   setDraw(doc, color);
   doc.setLineWidth(0.8);
-  doc.line(x, y + 2, x + doc.getTextWidth(title), y + 2);
+  doc.line(x, y + 2, x + doc.getTextWidth(safeTitle), y + 2);
   return y + 10;
 };
 
