@@ -153,6 +153,7 @@ export const generateEvaluationReport = (
   _evaluatorProfiles: Record<string, EvaluatorProfile>,
   selfEvaluation?: SelfEvaluation | null
 ) => {
+  try {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
@@ -333,7 +334,7 @@ export const generateEvaluationReport = (
   doc.setFontSize(9);
   setColor(doc, C.primary);
   doc.setFont("helvetica", "bold");
-  doc.text("📊 Interpretação", m + 8, y + 8);
+  doc.text("Interpretacao", m + 8, y + 8);
 
   doc.setFontSize(8);
   setColor(doc, C.text);
@@ -495,8 +496,10 @@ export const generateEvaluationReport = (
 
   const fileName = `Avaliacao360_${evaluatedName.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(fileName);
+  } catch (error) {
+    console.error("Erro ao gerar PDF:", error);
+  }
 };
-
 export const generateAllReports = (
   groupedData: Array<{
     name: string;
