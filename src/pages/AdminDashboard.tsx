@@ -214,8 +214,8 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleExportAll = () => {
-    const grouped = Object.values(groupedEvaluations).map((group) => ({
+  const getGroupedData = () =>
+    Object.values(groupedEvaluations).map((group) => ({
       name: group.name,
       email: group.email,
       position: group.position,
@@ -223,12 +223,30 @@ const AdminDashboard = () => {
       selfEvaluation: getSelfEvaluationForUser(group.email),
     }));
 
+  const handleExportAll = () => {
+    const grouped = getGroupedData();
     generateAllReports(grouped, evaluatorProfiles);
-
     toast({
       title: "PDFs gerados",
       description: `${grouped.length} relatórios foram baixados com sucesso.`,
     });
+  };
+
+  const handleExportZip = async () => {
+    try {
+      const grouped = getGroupedData();
+      await generateAllReportsAsZip(grouped);
+      toast({
+        title: "ZIP gerado",
+        description: `${grouped.length} relatórios exportados em um único arquivo ZIP.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao gerar ZIP",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   // Group evaluations by evaluated user
