@@ -66,11 +66,9 @@ export const drawCoverPage = (
   doc.text("DATA", m + 25, cardY + 50);
   doc.setFontSize(10);
   setColor(doc, C.dark);
-  doc.text(
-    new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }),
-    m + 25,
-    cardY + 55
-  );
+  const now = new Date();
+  const dateStr = `${now.getDate().toString().padStart(2, "0")}/${(now.getMonth() + 1).toString().padStart(2, "0")}/${now.getFullYear()}`;
+  doc.text(dateStr, m + 25, cardY + 55);
 
   // Footer
   doc.setFontSize(7);
