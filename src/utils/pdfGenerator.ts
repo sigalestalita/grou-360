@@ -2,7 +2,6 @@ import jsPDF from "jspdf";
 import JSZip from "jszip";
 import { Evaluation, SelfEvaluation, EvaluatorProfile } from "./pdf/constants";
 import { drawFooter, savePdf } from "./pdf/helpers";
-import { drawCoverPage } from "./pdf/coverPage";
 import { drawAnalyticsPage } from "./pdf/analyticsPage";
 import { drawEvaluationsPage } from "./pdf/evaluationsPage";
 
@@ -18,14 +17,15 @@ const buildReport = (
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
 
-  drawCoverPage(doc, evaluatedName, evaluatedPosition);
-  drawAnalyticsPage(doc, evaluations, selfEvaluation);
-  drawEvaluationsPage(doc, evaluations, selfEvaluation);
+  // Page 1: Analytics (header drawn inside)
+  drawAnalyticsPage(doc, evaluatedName, evaluations, selfEvaluation);
+  // Page 2+: Evaluations
+  drawEvaluationsPage(doc, evaluatedName, evaluations, selfEvaluation);
 
   const totalPages = doc.getNumberOfPages();
-  for (let i = 2; i <= totalPages; i++) {
+  for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    drawFooter(doc, pw, ph, i - 1, totalPages - 1);
+    drawFooter(doc, pw, ph, i, totalPages);
   }
 
   return doc;
