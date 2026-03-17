@@ -27,8 +27,8 @@ export const drawAnalyticsPage = (
     ? evaluations.reduce((s, e) => s + e.rating, 0) / evaluations.length
     : 0;
 
-  drawKpiCard(doc, startX, y, cardW, cardH, "Media Geral", avgRating.toFixed(1), "de 5.0");
-  drawKpiCard(doc, startX + cardW + gap, y, cardW, cardH, "Avaliacoes", `${evaluations.length}`, "recebidas");
+  drawKpiCard(doc, startX, y, cardW, cardH, "M\u00E9dia Geral", avgRating.toFixed(1), "de 5.0");
+  drawKpiCard(doc, startX + cardW + gap, y, cardW, cardH, "Avalia\u00E7\u00F5es", `${evaluations.length}`, "recebidas");
   y += cardH + 16;
 
   // Média vs. Autoavaliação
