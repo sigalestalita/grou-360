@@ -57,7 +57,7 @@ export const drawPageHeader = (doc: jsPDF, pw: number, name: string) => {
   doc.setFontSize(28);
   doc.setFont("helvetica", "normal");
   setColor(doc, C.white);
-  const relText = "Relatorio ";
+  const relText = "Relat\u00F3rio ";
   const indText = "Individual";
   const relW = doc.getTextWidth(relText);
   const indW = doc.getTextWidth(indText);
