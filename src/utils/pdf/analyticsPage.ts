@@ -27,22 +27,22 @@ export const drawAnalyticsPage = (
     ? evaluations.reduce((s, e) => s + e.rating, 0) / evaluations.length
     : 0;
 
-  drawKpiCard(doc, startX, y, cardW, cardH, "Media Geral", avgRating.toFixed(1), "de 5.0");
-  drawKpiCard(doc, startX + cardW + gap, y, cardW, cardH, "Avaliacoes", `${evaluations.length}`, "recebidas");
+  drawKpiCard(doc, startX, y, cardW, cardH, "M\u00E9dia Geral", avgRating.toFixed(1), "de 5.0");
+  drawKpiCard(doc, startX + cardW + gap, y, cardW, cardH, "Avalia\u00E7\u00F5es", `${evaluations.length}`, "recebidas");
   y += cardH + 16;
 
   // Média vs. Autoavaliação
-  y = drawSectionTitle(doc, "Media vs. Autoavaliacao", m, y);
+  y = drawSectionTitle(doc, "M\u00E9dia vs. Autoavalia\u00E7\u00E3o", m, y);
 
   doc.setFontSize(9);
   setColor(doc, C.text);
   doc.setFont("helvetica", "normal");
-  doc.text("Avaliacao dos pares", m + 5, y + 4);
+  doc.text("Avalia\u00E7\u00E3o dos pares", m + 5, y + 4);
   drawRatingBar(doc, m + 55, y, avgRating, cw - 55, 7);
   y += 14;
 
   if (selfEvaluation) {
-    doc.text("Autoavaliacao", m + 5, y + 4);
+    doc.text("Autoavalia\u00E7\u00E3o", m + 5, y + 4);
     drawRatingBar(doc, m + 55, y, selfEvaluation.rating, cw - 55, 7);
     y += 14;
   }
@@ -50,7 +50,7 @@ export const drawAnalyticsPage = (
   y += 6;
 
   // Distribuição de notas
-  y = drawSectionTitle(doc, "Distribuicao de notas", m, y);
+  y = drawSectionTitle(doc, "Distribui\u00E7\u00E3o de notas", m, y);
 
   const dist = [1, 2, 3, 4, 5].map(r => ({
     rating: r,
@@ -94,18 +94,18 @@ export const drawAnalyticsPage = (
   doc.setFontSize(10);
   setColor(doc, C.orange);
   doc.setFont("helvetica", "bold");
-  doc.text("Interpretacao", m + 8, y + 9);
+  doc.text("Interpreta\u00E7\u00E3o", m + 8, y + 9);
 
   doc.setFontSize(8);
   setColor(doc, C.text);
   doc.setFont("helvetica", "normal");
   const interpretation = avgRating >= 4.5
-    ? "Desempenho excepcional. O colaborador demonstra consistencia elevada nas competencias avaliadas."
+    ? "Desempenho excepcional. O l\u00EDder demonstra consist\u00EAncia elevada nas compet\u00EAncias avaliadas."
     : avgRating >= 3.5
-      ? "Bom desempenho. O colaborador atende as expectativas com oportunidades pontuais de desenvolvimento."
+      ? "Bom desempenho. O l\u00EDder atende \u00E0s expectativas com oportunidades pontuais de desenvolvimento."
       : avgRating >= 2.5
-        ? "Desempenho adequado. Ha areas significativas que podem ser desenvolvidas."
-        : "Atencao necessaria. Recomenda-se um plano de desenvolvimento individual.";
+        ? "Desempenho adequado. H\u00E1 \u00E1reas significativas que podem ser desenvolvidas."
+        : "Aten\u00E7\u00E3o necess\u00E1ria. Recomenda-se um plano de desenvolvimento individual.";
   const interpLines = doc.splitTextToSize(sanitizeText(interpretation), cw - 16);
   doc.text(interpLines, m + 8, y + 16);
 };

@@ -16,12 +16,12 @@ export const drawEvaluationsPage = (
   drawPageHeader(doc, pw, evaluatedName);
   let y = 66;
 
-  y = drawSectionTitle(doc, "Avaliacoes Recebidas", m, y);
+  y = drawSectionTitle(doc, "Avalia\u00E7\u00F5es Recebidas", m, y);
 
   doc.setFontSize(8);
   setColor(doc, C.gray);
   doc.setFont("helvetica", "normal");
-  doc.text("As avaliacoes sao apresentadas de forma anonima para preservar a confidencialidade.", m, y);
+  doc.text("As avalia\u00E7\u00F5es s\u00E3o apresentadas de forma an\u00F4nima para preservar a confidencialidade.", m, y);
   y += 10;
 
   evaluations.forEach((evaluation, index) => {
@@ -94,7 +94,7 @@ export const drawEvaluationsPage = (
     y = checkPage(doc, y, 60, ph, pw, evaluatedName);
     y += 8;
 
-    y = drawSectionTitle(doc, "Autoavaliacao", m, y);
+    y = drawSectionTitle(doc, "Autoavalia\u00E7\u00E3o", m, y);
 
     // Header row with "PROPRIA" tag
     setFill(doc, C.lightGray);
@@ -107,7 +107,7 @@ export const drawEvaluationsPage = (
     doc.setFontSize(9);
     setColor(doc, C.white);
     doc.setFont("helvetica", "bold");
-    doc.text("PROPRIA", m + 6, y + 5);
+    doc.text("PR\u00D3PRIA", m + 6, y + 5);
 
     drawRatingBar(doc, pw - m - 45, y, selfEvaluation.rating, 40, 7);
 
