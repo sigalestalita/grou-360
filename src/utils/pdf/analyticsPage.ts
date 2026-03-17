@@ -50,7 +50,7 @@ export const drawAnalyticsPage = (
   y += 6;
 
   // Distribuição de notas
-  y = drawSectionTitle(doc, "Distribuicao de notas", m, y);
+  y = drawSectionTitle(doc, "Distribui\u00E7\u00E3o de notas", m, y);
 
   const dist = [1, 2, 3, 4, 5].map(r => ({
     rating: r,
