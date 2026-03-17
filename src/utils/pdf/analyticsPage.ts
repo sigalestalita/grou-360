@@ -37,7 +37,7 @@ export const drawAnalyticsPage = (
   doc.setFontSize(9);
   setColor(doc, C.text);
   doc.setFont("helvetica", "normal");
-  doc.text("Avaliacao dos pares", m + 5, y + 4);
+  doc.text("Avalia\u00E7\u00E3o dos pares", m + 5, y + 4);
   drawRatingBar(doc, m + 55, y, avgRating, cw - 55, 7);
   y += 14;
 
