@@ -16,7 +16,7 @@ export const drawEvaluationsPage = (
   drawPageHeader(doc, pw, evaluatedName);
   let y = 66;
 
-  y = drawSectionTitle(doc, "Avaliacoes Recebidas", m, y);
+  y = drawSectionTitle(doc, "Avalia\u00E7\u00F5es Recebidas", m, y);
 
   doc.setFontSize(8);
   setColor(doc, C.gray);
