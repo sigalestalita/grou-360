@@ -107,7 +107,7 @@ export const drawEvaluationsPage = (
     doc.setFontSize(9);
     setColor(doc, C.white);
     doc.setFont("helvetica", "bold");
-    doc.text("PROPRIA", m + 6, y + 5);
+    doc.text("PR\u00D3PRIA", m + 6, y + 5);
 
     drawRatingBar(doc, pw - m - 45, y, selfEvaluation.rating, 40, 7);
 

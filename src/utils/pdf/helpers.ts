@@ -84,8 +84,8 @@ export const drawFooter = (doc: jsPDF, w: number, h: number, page: number, total
   doc.setFontSize(7);
   setColor(doc, C.gray);
   doc.setFont("helvetica", "normal");
-  doc.text(`Pagina ${page} de ${total}`, w / 2, h - 12, { align: "center" });
-  doc.text("Relatorio Confidencial - Grou 360", w / 2, h - 7, { align: "center" });
+  doc.text(`P\u00E1gina ${page} de ${total}`, w / 2, h - 12, { align: "center" });
+  doc.text("Relat\u00F3rio Confidencial - Grou 360", w / 2, h - 7, { align: "center" });
 };
 
 export const checkPage = (doc: jsPDF, y: number, need: number, ph: number, pw: number, name?: string): number => {

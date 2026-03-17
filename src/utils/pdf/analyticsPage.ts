@@ -100,12 +100,12 @@ export const drawAnalyticsPage = (
   setColor(doc, C.text);
   doc.setFont("helvetica", "normal");
   const interpretation = avgRating >= 4.5
-    ? "Desempenho excepcional. O colaborador demonstra consistencia elevada nas competencias avaliadas."
+    ? "Desempenho excepcional. O l\u00EDder demonstra consist\u00EAncia elevada nas compet\u00EAncias avaliadas."
     : avgRating >= 3.5
-      ? "Bom desempenho. O colaborador atende as expectativas com oportunidades pontuais de desenvolvimento."
+      ? "Bom desempenho. O l\u00EDder atende \u00E0s expectativas com oportunidades pontuais de desenvolvimento."
       : avgRating >= 2.5
-        ? "Desempenho adequado. Ha areas significativas que podem ser desenvolvidas."
-        : "Atencao necessaria. Recomenda-se um plano de desenvolvimento individual.";
+        ? "Desempenho adequado. H\u00E1 \u00E1reas significativas que podem ser desenvolvidas."
+        : "Aten\u00E7\u00E3o necess\u00E1ria. Recomenda-se um plano de desenvolvimento individual.";
   const interpLines = doc.splitTextToSize(sanitizeText(interpretation), cw - 16);
   doc.text(interpLines, m + 8, y + 16);
 };
