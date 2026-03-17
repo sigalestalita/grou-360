@@ -94,7 +94,7 @@ export const drawAnalyticsPage = (
   doc.setFontSize(10);
   setColor(doc, C.orange);
   doc.setFont("helvetica", "bold");
-  doc.text("Interpretacao", m + 8, y + 9);
+  doc.text("Interpreta\u00E7\u00E3o", m + 8, y + 9);
 
   doc.setFontSize(8);
   setColor(doc, C.text);
