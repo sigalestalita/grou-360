@@ -42,7 +42,7 @@ export const drawAnalyticsPage = (
   y += 14;
 
   if (selfEvaluation) {
-    doc.text("Autoavaliacao", m + 5, y + 4);
+    doc.text("Autoavalia\u00E7\u00E3o", m + 5, y + 4);
     drawRatingBar(doc, m + 55, y, selfEvaluation.rating, cw - 55, 7);
     y += 14;
   }
