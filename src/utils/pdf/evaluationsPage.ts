@@ -21,7 +21,7 @@ export const drawEvaluationsPage = (
   doc.setFontSize(8);
   setColor(doc, C.gray);
   doc.setFont("helvetica", "normal");
-  doc.text("As avaliacoes sao apresentadas de forma anonima para preservar a confidencialidade.", m, y);
+  doc.text("As avalia\u00E7\u00F5es s\u00E3o apresentadas de forma an\u00F4nima para preservar a confidencialidade.", m, y);
   y += 10;
 
   evaluations.forEach((evaluation, index) => {
