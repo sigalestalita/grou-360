@@ -32,7 +32,7 @@ export const drawAnalyticsPage = (
   y += cardH + 16;
 
   // Média vs. Autoavaliação
-  y = drawSectionTitle(doc, "Media vs. Autoavaliacao", m, y);
+  y = drawSectionTitle(doc, "M\u00E9dia vs. Autoavalia\u00E7\u00E3o", m, y);
 
   doc.setFontSize(9);
   setColor(doc, C.text);
