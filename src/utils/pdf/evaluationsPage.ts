@@ -94,7 +94,7 @@ export const drawEvaluationsPage = (
     y = checkPage(doc, y, 60, ph, pw, evaluatedName);
     y += 8;
 
-    y = drawSectionTitle(doc, "Autoavaliacao", m, y);
+    y = drawSectionTitle(doc, "Autoavalia\u00E7\u00E3o", m, y);
 
     // Header row with "PROPRIA" tag
     setFill(doc, C.lightGray);
