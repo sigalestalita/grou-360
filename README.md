@@ -1,73 +1,57 @@
-# Welcome to your Lovable project
+# grou-360
 
-## Project info
+sistema de feedback para o IEE | Instituto de Estudos Empresariais, desenvolvido pela grou
 
-**URL**: https://lovable.dev/projects/29bebb46-119c-4bdb-8600-c65affb2ccd1
+sobre a plataforma:
+autenticação - login e senha provisória 1234 para todos (funcionalidade de poder mudar depois do primeiro login)
 
-## How can I edit this code?
+personalizar o sistema de cada um com suas variáveis de nome e cargo (tanto para o usuário quanto para aquele que ele irá avaliar)
 
-There are several ways of editing your application.
+7 usuários que se interavaliam em todas as 3 perguntas:
+Tiago Dinon Carpenedo	Presidente - presidencia@iee.com.br 
+Hugo de Oliveira Muller	Vice-Presidente vp@iee.com.br 
+Alan Martins Elbling	Diretor de Eventos diretoriaeventos@iee.com.br 
+Gustavo Corrêa Fernandes	Diretor de Formação diretoriaformacao@iee.com.br 
+Milena Waitikoski Pedroso	Diretora de Comunicação diretoriacomunicacao@iee.com.br 
+Rodrigo Villa Real Mello	Diretor Financeiro diretoriafinanceira@iee.com.br 
+Victoria Werner De Nadal	Diretora de Relações Institucionais e do Fórum da Liberdade diretoriaforum@iee.com.br
 
-**Use Lovable**
+3 perguntas: 1 objetiva (escala) + 2 descritivas
+PERGUNTA 1 - OBJETIVA (escala)
+Como você avalia a gestão da pasta de (nome do xxxxx) | (cargo do xxxxxX)?
+5 - Supera o esperado
+4 - Atende plenamente 
+3 - Atende parcialmente
+2 - Atende minimamente
+1 - Não atende
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/29bebb46-119c-4bdb-8600-c65affb2ccd1) and start prompting.
+PERGUNTA 2 - DESCRITIVA
+Na sua visão quais são os maiores talentos de (nome) na liderança e gestão da pasta?
 
-Changes made via Lovable will be committed automatically to this repo.
+PERGUNTA 3 - DESCRITIVA
+Quais são as oportunidades de melhoria que você acredita que (nome) pudesse intervir, alavancaria performance e/ou teria um impacto mais favorável sobre sua liderança?
 
-**Use your preferred IDE**
+- relatório individual em PDF (notas da pergunta 1 + respostas das perguntas 2 e 3)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+This project was built with [Lovable](https://lovable.dev).
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**Live app**: https://grou-360.lovable.app
 
-Follow these steps:
+## Build with Lovable
+
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/29bebb46-119c-4bdb-8600-c65affb2ccd1).
+
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+
+## Development
+
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+git clone <this-repository-url>
+cd <repository-name>
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/29bebb46-119c-4bdb-8600-c65affb2ccd1) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
